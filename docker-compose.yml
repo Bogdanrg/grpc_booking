@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  app:
+    build: .
+    container_name: "app"
+    entrypoint: ["bash" , "entrypoint.sh" ]
+    ports:
+      - "${UVICORN_PORT}:${UVICORN_PORT}"
+    volumes:
+      - .:/usr/src/app/
+    env_file:
+      - .env
+    depends_on:
+    - server
+
+  mongodb:
+    image: mongo:latest
+    container_name: "mongodb"
+    env_file:
+      - .env
+    volumes:
+      - grpc:/data/db
+    ports:
+      - "${MONGO_PORTS}:${MONGO_PORTS}"
+    restart: always
+
+  server:
+    build: .
+    container_name: "server"
+    entrypoint: ["bash" , "booking_server_ep.sh" ]
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    volumes:
+      - .:/usr/src/app/
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+
+volumes:
+  grpc:
+    external: true
